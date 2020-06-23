@@ -25,7 +25,7 @@ jobs:
     
     - uses: azure/container-scan@v0
       name: Container Scan 
-      continue-on-error: "true"
+      continue-on-error: true
       with:
         image-name: ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
     
