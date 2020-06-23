@@ -22,13 +22,24 @@ jobs:
     - run: |
         docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
-    
+  
+  container-scan:
+    runs-on: ubuntu-latest
+    needs: build
+    continue-on-error: true
+    steps:
     - uses: azure/container-scan@v0
       name: Container Scan 
-      continue-on-error: true
       with:
         image-name: ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
-    
+        username: ${{ secrets.REGISTRY_USERNAME }} 
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+
+  deploy: 
+    runs-on: ubuntu-latest
+    needs: [build, container-scan]
+    steps:
+    - uses: actions/checkout@master
     - uses: azure/aks-set-context@v1
       with:
         creds: '${{ secrets.AZURE_CREDENTIALS }}'
