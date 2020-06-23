@@ -42,7 +42,7 @@ jobs:
 #         image-name: ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
     
     - run: |
-        curl -X GET -H "Authorization: token ${{ github.token }}" https://api.github.com/repos/${{ env.GITHUB_REPOSITORY }}/commits/${{ github.sha }}/check-runs
+        curl -X GET -H "Authorization: token ${{ github.token }}" https://api.github.com/repos/${{ gitub.repository }}/commits/${{ github.sha }}/check-runs
     
     # Set the target Azure Kubernetes Service (AKS) cluster. 
 #     - uses: azure/aks-set-context@v1
