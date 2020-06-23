@@ -34,6 +34,7 @@ jobs:
         image-name: ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
         username: ${{ secrets.REGISTRY_USERNAME }} 
         password: ${{ secrets.REGISTRY_PASSWORD }}
+        run-quality-checks: 'false'
 
   deploy: 
     runs-on: ubuntu-latest
