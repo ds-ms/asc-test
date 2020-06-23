@@ -39,7 +39,7 @@ jobs:
     - uses: azure/container-scan@v0
       name: Container Scan
       with:
-        image: ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
+        image-name: ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
     
     # Set the target Azure Kubernetes Service (AKS) cluster. 
     - uses: azure/aks-set-context@v1
