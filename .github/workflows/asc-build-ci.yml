@@ -71,7 +71,7 @@ jobs:
           ${{ env.REGISTRY_NAME }}-registry-connection
         namespace: ${{ env.NAMESPACE }}
         
-    - uses: ds-ms/create-assessment/action@master
+    - uses: ds-ms/asc-assessment@master
       name: "Post Assessment"
       with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
