@@ -36,6 +36,11 @@ jobs:
         docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
     
+    - uses: azure/container-scan@v1
+      name: Container Scan
+      with:
+        image: ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
+    
     # Set the target Azure Kubernetes Service (AKS) cluster. 
     - uses: azure/aks-set-context@v1
       with:
