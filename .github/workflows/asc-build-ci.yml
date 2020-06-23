@@ -1,17 +1,5 @@
-# This workflow will build a docker container, publish it to Azure Container Registry, and deploy it to Azure Kubernetes Service.
-#
-# To configure this workflow:
-#
-# 1. Set up the following secrets in your workspace: 
-#     a. REGISTRY_USERNAME with ACR username
-#     b. REGISTRY_PASSWORD with ACR Password
-#     c. AZURE_CREDENTIALS with the output of `az ad sp create-for-rbac --sdk-auth`
-#
-# 2. Change the values for the REGISTRY_NAME, CLUSTER_NAME, CLUSTER_RESOURCE_GROUP and NAMESPACE environment variables (below).
-
 on: [push]
 
-# Environment variables available to all jobs and steps in this workflow
 env:
   REGISTRY_NAME: dsmsacr
   CLUSTER_NAME: ds-ms-k8s
@@ -24,54 +12,59 @@ jobs:
     steps:
     - uses: actions/checkout@master
     
-    # Connect to Azure Container registry (ACR)
-#     - uses: azure/docker-login@v1
-#       with:
-#         login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
-#         username: ${{ secrets.REGISTRY_USERNAME }} 
-#         password: ${{ secrets.REGISTRY_PASSWORD }}
+    - uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
+        username: ${{ secrets.REGISTRY_USERNAME }} 
+        password: ${{ secrets.REGISTRY_PASSWORD }}
     
-#     # Container build and push to a Azure Container registry (ACR)
-#     - run: |
-#         docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
-#         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
-    
-#     - uses: azure/container-scan@v0
-#       name: Container Scan
-#       with:
-#         image-name: ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
-    
+    # Container build and push to a Azure Container registry (ACR)
     - run: |
-        curl -X GET -H "Authorization: token ${{ github.token }}" -H "Accept: application/vnd.github.antiope-preview+json" https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs
+        docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
     
-    # Set the target Azure Kubernetes Service (AKS) cluster. 
-#     - uses: azure/aks-set-context@v1
-#       with:
-#         creds: '${{ secrets.AZURE_CREDENTIALS }}'
-#         cluster-name: ${{ env.CLUSTER_NAME }}
-#         resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+    - uses: azure/container-scan@v0
+      name: Container Scan 
+      continue-on-error: true
+      with:
+        image-name: ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
     
-#     # Create namespace if doesn't exist
-#     - run: |
-#         kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
+    - uses: azure/aks-set-context@v1
+      with:
+        creds: '${{ secrets.AZURE_CREDENTIALS }}'
+        cluster-name: ${{ env.CLUSTER_NAME }}
+        resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
     
-#     # Create imagepullsecret for Azure Container registry (ACR)
-#     - uses: azure/k8s-create-secret@v1
-#       with:
-#         container-registry-url: ${{ env.REGISTRY_NAME }}.azurecr.io
-#         container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
-#         container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
-#         secret-name: ${{ env.REGISTRY_NAME }}-registry-connection
-#         namespace: ${{ env.NAMESPACE }}
+    - name: "Create namespace"
+      run: |
+        kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
     
-#     # Deploy app to AKS
-#     - uses: azure/k8s-deploy@v1
-#       with:
-#         manifests: |
-#           manifests/deployment.yml
-#           manifests/service.yml
-#         images: |
-#           ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
-#         imagepullsecrets: |
-#           ${{ env.REGISTRY_NAME }}-registry-connection
-#         namespace: ${{ env.NAMESPACE }}
+    - uses: azure/k8s-create-secret@v1
+      name: "Create secret"
+      with:
+        container-registry-url: ${{ env.REGISTRY_NAME }}.azurecr.io
+        container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
+        container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+        secret-name: ${{ env.REGISTRY_NAME }}-registry-connection
+        namespace: ${{ env.NAMESPACE }}
+    
+    - uses: azure/k8s-deploy@v1
+      name: "Deploy to cluster"
+      with:
+        manifests: |
+          manifests/deployment.yml
+          manifests/service.yml
+        images: |
+          ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
+        imagepullsecrets: |
+          ${{ env.REGISTRY_NAME }}-registry-connection
+        namespace: ${{ env.NAMESPACE }}
+        
+    - uses: ds-ms/create-assessment/action@master
+      name: "Post Assessment"
+      with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          resource-group: ds-ms
+          cluster-name: ds-ms-k8s
+          code: Unhealthy
+          severity: High
