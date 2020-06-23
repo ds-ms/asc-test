@@ -12,6 +12,6 @@ spec:
     spec:
       containers:
         - name: dsmsreviewapp 
-          image: dsmsacr.azurecr.io/my-image
+          image: dsmsacr.azurecr.io/myimage
           ports:
           - containerPort: 80
