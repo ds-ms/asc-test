@@ -36,7 +36,7 @@ jobs:
         docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
     
-    - uses: azure/container-scan@v1
+    - uses: azure/container-scan@v0
       name: Container Scan
       with:
         image: ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
