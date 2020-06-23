@@ -1,17 +1,25 @@
-  
-apiVersion : apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dsmsreviewapp 
+  labels:
+    app: dsmsreviewapp
+  name: dsmsreviewapp
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: dsmsreviewapp
+  strategy: {}
   template:
     metadata:
+      creationTimestamp: null
       labels:
-        app: dsmsreviewapp 
+        app: dsmsreviewapp
     spec:
       containers:
-        - name: dsmsreviewapp 
-          image: dsmsacr.azurecr.io/myimage
-          ports:
+      - image: dsmsacr.azurecr.io/myimage
+        name: dsmsreviewapp
+        ports:
           - containerPort: 80
+        resources: {}
+status: {}
