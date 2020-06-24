@@ -78,7 +78,6 @@ jobs:
       name: "Create Assessment"
       with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-          resource-group: ds-ms
-          cluster-name: ds-ms-k8s
-          code: Unhealthy
-          severity: High
+          resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+          cluster-name:  ${{ env.CLUSTER_NAME }}
+          severity: Medium
