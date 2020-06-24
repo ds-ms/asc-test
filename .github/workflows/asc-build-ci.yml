@@ -82,4 +82,3 @@ jobs:
           cluster-name: ds-ms-k8s
           code: Unhealthy
           severity: High
-          assessment-name: 'GitHub Action container scan - CI'
